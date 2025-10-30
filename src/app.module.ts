@@ -6,6 +6,8 @@ import { UsersModule } from './modules/admin/users/users.module';
 import { User } from './modules/admin/users/entities/user.entity';
 import { AuthModule } from './modules/auth/auth.module';
 import { InventarioModule } from './modules/admin/inventario/inventario.module';
+import { RolesModule } from './modules/admin/roles/roles.module';
+import { PermissionsModule } from './modules/admin/permissions/permissions.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { InventarioModule } from './modules/admin/inventario/inventario.module';
     UsersModule,
     AuthModule,
     InventarioModule,
+    PermissionsModule,
+    RolesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
