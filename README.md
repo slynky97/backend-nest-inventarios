@@ -31,6 +31,13 @@
 $ npm install
 ```
 
+## Cofiguracion de variables de entorno
+'''
+-Para Base de Datos
+- Para desarrollo: copiar el archivo `.example.development.env` con el nombre `.development.env`
+- Para produccion: copiar el archivo `.example.production.env` con el nombre `.production.env`
+'''
+
 ## Compile and run the project
 
 ```bash

@@ -16,7 +16,7 @@ services:
     container_name: bd_postgres
     image: postgres:16-alpine
     ports:
-      - "5433:5432"
+      - "5443:5432"
     environment:
       POSTGRES_DB: backend_nest_inventario
       POSTGRES_USER: postgres
