@@ -16,11 +16,13 @@ async function bootstrap() {
   // Swagger
 
   const config = new DocumentBuilder()
+    .addBearerAuth()
     .setTitle('Backend Api')
     .setDescription('Proyecto Backend api rest')
     .setVersion('1.0')
     .addTag('node')
     .build();
+    
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory);
 
