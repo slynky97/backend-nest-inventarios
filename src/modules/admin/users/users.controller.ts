@@ -13,7 +13,7 @@ export class UsersController {
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
-    console.log("Guardando en controlador .... ", createUserDto);
+    //console.log("Guardando en controlador .... ", createUserDto);
     return this.usersService.create(createUserDto);
   }
 
