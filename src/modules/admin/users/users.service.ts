@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Not, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { Role } from '../roles/entities/role.entity';
 
 @Injectable()
 export class UsersService {
@@ -12,6 +13,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
   ){
 
   }
@@ -33,6 +36,15 @@ export class UsersService {
 
     //const nuevoUser = this.userRepository.create(createUserDto);
 
+    // roles
+    let roles: Role[] = [];
+    if(createUserDto.roleIds?.length){
+      roles = await this.roleRepository.find({where: {id: In(createUserDto.roleIds)}})
+      if(roles.length !== createUserDto.roleIds.length){
+        throw new BadRequestException('Uno o mas roleIds no son validos')
+      }
+    }
+
 
     // encriptar
     const hashPassword = await bcrypt.hash(createUserDto.password, 12);
@@ -40,11 +52,14 @@ export class UsersService {
       name: createUserDto.name,
       email: createUserDto.email,
       password: hashPassword,
+      roles
     });
 
     this.userRepository.save(newUser);
 
-    return newUser;
+    const { password, ...resto_datos } = newUser;
+
+    return resto_datos;
   }
 
   findAll() {

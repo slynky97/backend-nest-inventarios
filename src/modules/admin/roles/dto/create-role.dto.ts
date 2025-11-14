@@ -15,5 +15,5 @@ export class CreateRoleDto {
     @ApiProperty()
     @IsOptional()
     @IsArray()
-    perimissionIds?: string[];
+    perimissionIds?: number[];
 }
