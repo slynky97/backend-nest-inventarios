@@ -8,6 +8,8 @@ import { InventarioModule } from './modules/admin/inventario/inventario.module';
 import { RolesModule } from './modules/admin/roles/roles.module';
 import { PermissionsModule } from './modules/admin/permissions/permissions.module';
 import { ConfigModule } from '@nestjs/config';
+import { NotaModule } from './modules/admin/nota/nota.module';
+import { ClienteModule } from './modules/admin/cliente/cliente.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { ConfigModule } from '@nestjs/config';
     InventarioModule,
     PermissionsModule,
     RolesModule,
+    NotaModule,
+    ClienteModule,
   ],
   controllers: [AppController],
   providers: [AppService],
