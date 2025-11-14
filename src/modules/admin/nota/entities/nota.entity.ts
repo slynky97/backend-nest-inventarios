@@ -1,6 +1,5 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Cliente } from "../../cliente/entities/cliente.entity";
-import { ColdObservable } from "rxjs/internal/testing/ColdObservable";
 import { User } from "../../users/entities/user.entity";
 import { Movimiento } from "./movimiento.entity";
 
@@ -22,7 +21,7 @@ export class Nota {
     descuento: number;
 
     @Column({type: 'decimal', precision: 12, scale: 2})
-    total_calculado;
+    total_calculado: number;
 
     @Column({length: 50})
     estado_nota: string;
@@ -37,5 +36,5 @@ export class Nota {
     user: User;
 
     @OneToMany(() => Movimiento, mov => mov.nota)
-    movimientos: Movimiento;
+    movimientos: Movimiento[];
 }
