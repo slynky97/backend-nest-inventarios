@@ -1,6 +1,6 @@
 import { ProductoResponseDto } from "./producto-response.dto";
 
-export class PaginatedProductoResponseDto {
+export class PaginatedProductoResponseDto{
     data: ProductoResponseDto[];
     total: number;
     page: number;

@@ -11,6 +11,7 @@ import { Almacen } from '../inventario/almacen/entities/almacen.entity';
 import { Movimiento } from './entities/movimiento.entity';
 import { QueryRunner } from 'typeorm/browser';
 import { AlmacenProducto } from '../inventario/almacen/entities/almacen_producto.entity';
+import { FindNotaDto } from './dto/find-nota-dto';
 
 @Injectable()
 export class NotaService {
@@ -18,16 +19,18 @@ export class NotaService {
   constructor(
     @InjectDataSource()
     private readonly dataSource:DataSource
-  ){}
+  ){
+
+  }
 
   async create(createNotaDto: CreateNotaDto) {
 
-    // trabajar con transacciones
+    // trabjar con transacciones
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
-    await queryRunner.startTransaction();
+    await queryRunner.startTransaction()
 
-    try{
+    try {
       const userRepo = queryRunner.manager.getRepository(User);
       const clienteRepo = queryRunner.manager.getRepository(Cliente);
       const notaRepo = queryRunner.manager.getRepository(Nota);
@@ -36,57 +39,62 @@ export class NotaService {
       const movRepo = queryRunner.manager.getRepository(Movimiento);
 
       const user = await userRepo.findOneBy({id: createNotaDto.user});
-      if(!user) throw new NotFoundException('Usuario no encontrado')
+      if(!user) throw new NotFoundException('Usuario no encontrado');
+
 
       const cliente = await clienteRepo.findOneBy({id: createNotaDto.cliente});
-      if(!cliente) throw new NotFoundException('Cliente no encontrado')
+      if(!cliente) throw new NotFoundException('Cliente no encontrado');
 
       // crear nota
+
       const nota = await notaRepo.create({
         ...createNotaDto,
         cliente: cliente,
         user: user
       })
+      console.log(nota);
       // guardar la nota para obtener el ID para movimientos
       await notaRepo.save(nota);
 
-      const movimientosGuardados:Movimiento[] = [];
-      for (const m of createNotaDto.movimientos){
+      const movimientosGuardados:Movimiento[] = []
+
+      for (const m of createNotaDto.movimientos) {
         const producto = await productoRepo.findOneBy({id: m.producto_id});
         if(!producto) throw new NotFoundException('Producto no encontrado');
 
         const almacen = await almacenRepo.findOneBy({id: m.almacen_id});
         if(!almacen) throw new NotFoundException('Almacen no encontrado');
 
-        const movimiento = await movRepo.create({
+        const movimiento = movRepo.create({
           ...m,
           nota: nota,
-          producto: producto,
-          almacen: almacen
+          producto,
+          almacen
         });
         await this.actualizarStock(queryRunner, almacen, producto, m.cantidad, m.tipo_movimiento);
 
         const movGuardado = await movRepo.save(movimiento);
-        movimientosGuardados.push(movGuardado);
-
+        movimientosGuardados.push(movGuardado)
       }
+
       nota.movimientos = movimientosGuardados;
       await queryRunner.commitTransaction();
 
       return nota;
-      
-    }catch (error){
+
+    } catch (error) {
       await queryRunner.rollbackTransaction();
-      return error;
-    }finally{
-      await queryRunner.release();
+      return error
+    } finally{
+      await queryRunner.release()
     }
-  
+
     return 'This action adds a new nota';
   }
 
-  private async actualizarStock(queryRunner:QueryRunner, almacen:Almacen, producto:Producto, cantidad: number, tipo: 'ingreso' | 'salida' | 'devolucion' ){
+  private async actualizarStock(queryRunner:QueryRunner, almacen:Almacen, producto: Producto, cantidad: number, tipo:'ingreso' | 'salida' | 'devolucion' ){
     const almacenProductoRep = queryRunner.manager.getRepository(AlmacenProducto)
+
     let ap = await almacenProductoRep.findOne({
       where: {
         almacen: {id: almacen.id},
@@ -96,27 +104,58 @@ export class NotaService {
     });
     if(!ap){
       if(tipo === 'salida'){
-        throw new BadRequestException('No hay stock registrado para este producto en este almacen')
+        throw new BadRequestException('No hay stock registrado para este producto en este amlacen')
       }
+
       ap = almacenProductoRep.create({
-        almacen, producto, cantidad_actual: cantidad, fecha_actualizacion: new Date()
+        almacen, producto, cantidad_actual: cantidad, fecha_actualizacion: new Date() 
       })
     }else{
       if(tipo === 'ingreso' || tipo === 'devolucion'){
-        ap.cantidad_actual *= cantidad;
+        ap.cantidad_actual += cantidad;
       }else if(tipo === 'salida'){
-        if(ap.cantidad_actual< cantidad){
-          throw new BadRequestException('Stock Insuficiente para la salida')
-        }
-        ap.cantidad_actual -= cantidad;
+        if(ap.cantidad_actual < cantidad){
+          throw new BadRequestException('Stock Insuficiente par la salida');
+        } 
+        ap.cantidad_actual -= cantidad
       }
-      ap.fecha_actualizacion = new Date();
+      ap.fecha_actualizacion = new Date()
     }
     await almacenProductoRep.save(ap);
+
   }
 
-  findAll() {
-    return `This action returns all nota`;
+  async findAll(findNotaDto: FindNotaDto) {
+    const queryBuilder = this.dataSource.getRepository(Nota).createQueryBuilder('nota')
+
+    queryBuilder.leftJoinAndSelect('nota.cliente', 'cliente')
+    queryBuilder.leftJoinAndSelect('nota.user', 'user')
+    queryBuilder.leftJoinAndSelect('nota.movimientos', 'movimientos')
+    queryBuilder.leftJoinAndSelect('movimientos.producto', 'producto')
+    queryBuilder.leftJoinAndSelect('movimientos.almacen', 'almacen')
+
+    if(findNotaDto.tipo_nota){
+      queryBuilder.andWhere('nota.tipo_nota = :tipo_nota', {tipo_nota: findNotaDto.tipo_nota});
+    }
+
+    if(findNotaDto.estado_nota){
+      queryBuilder.andWhere('nota.estado_nota = :estado_nota', {estado_nota: findNotaDto.estado_nota});
+    }
+
+    if(findNotaDto.fecha_inicio){
+      queryBuilder.andWhere('nota.fecha >= :fecha_inicio', {fecha_inicio: findNotaDto.fecha_inicio});
+    }
+    if(findNotaDto.fecha_fin){
+      queryBuilder.andWhere('nota.fecha <= :fecha_fin', {fecha_fin: findNotaDto.fecha_fin});
+    }
+    
+
+    const notas = await queryBuilder.getMany();
+
+    if(!notas.length){
+      throw new NotFoundException('No se encontradoron notas')
+    }
+    return notas;
   }
 
   findOne(id: number) {

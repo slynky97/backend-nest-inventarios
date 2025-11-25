@@ -1,39 +1,40 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsDateString, IsDecimal, IsNumber, IsOptional, IsString, IsUUID } from "class-validator";
+import { IsArray, IsDateString, IsDecimal, IsNotEmpty, IsNumber, IsOptional, isString, IsString, IsUUID } from "class-validator";
 
 export class CreateNotaDto {
 
     @ApiProperty()
     @IsDateString()
     fecha: Date;
-    
+
     @ApiProperty()
     @IsString()
-    tipo_nota: string;
-    
+    tipo_nota: string; // 'compra' || 'venta'
+
+
     @ApiProperty({required: true})
-    @IsOptional()
     @IsDecimal()
+    @IsOptional()
     impuestos?: number;
-    
+
     @ApiProperty()
     @IsDecimal()
     @IsOptional()
     descuento: number;
-    
+
     @ApiProperty()
     @IsDecimal()
     total_calculado: number;
-    
+
     @ApiProperty()
     @IsString()
     estado_nota: string;
 
     @ApiProperty()
-    @IsOptional()
     @IsString()
+    @IsOptional()
     observaciones?: string;
-    
+
     @ApiProperty()
     @IsNumber()
     cliente: number;
@@ -42,7 +43,7 @@ export class CreateNotaDto {
     @IsString()
     @IsUUID('4', {each: true})
     user: string;
-    
+
     @ApiProperty()
     @IsArray()
     movimientos: MovimientoDto[];
@@ -51,7 +52,7 @@ export class CreateNotaDto {
 class MovimientoDto{
     @ApiProperty()
     @IsNumber()
-    producto_id: number
+    producto_id: number;
 
     @ApiProperty()
     @IsNumber()
@@ -63,7 +64,7 @@ class MovimientoDto{
 
     @ApiProperty()
     @IsString()
-    tipo_movimiento: 'ingreso' | 'salida' |'devolucion';
+    tipo_movimiento: 'ingreso' | 'salida' | 'devolucion';
 
     @ApiProperty()
     @IsDecimal()

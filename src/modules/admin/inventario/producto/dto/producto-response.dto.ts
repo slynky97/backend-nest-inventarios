@@ -1,9 +1,10 @@
-export class CategoriaDto {
+export class CategoriaDto{
     id: number;
     nombre: string;
     descripcion?: string;
 }
-export class ProductoResponseDto {
+
+export class ProductoResponseDto{
     id: number;
     nombre: string;
     descripcion: string;

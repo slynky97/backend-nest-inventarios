@@ -1,10 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
 import { ProductoService } from './producto.service';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { AuthGuard } from 'src/modules/auth/auth.guard';
 
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 @Controller('producto')
 export class ProductoController {
   constructor(private readonly productoService: ProductoService) {}
@@ -40,7 +43,7 @@ export class ProductoController {
     @Query('sortBy') sortBy: string = '',
     @Query('order') order: 'ASC' | 'DESC' = 'ASC',
     @Query('almacen') almacen: number = 0,
-    @Query('activo') activo: boolean = true,
+    @Query('activo') activo: boolean = true
   ) {
     return this.productoService.findAll(page, limit, search, sortBy, order, almacen, activo);
   }
