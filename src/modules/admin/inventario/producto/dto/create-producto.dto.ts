@@ -30,7 +30,7 @@ export class CreateProductoDto {
     @IsString()
     @MaxLength(200)
     @IsOptional()
-    marca?: string
+    marca?: string;
 
     @ApiProperty({type: "string", default: "0.00"})
     @IsDecimal()
@@ -45,6 +45,7 @@ export class CreateProductoDto {
     @ApiProperty({type: 'boolean'})
     @IsBoolean()
     estado: boolean;
+
 
     @ApiProperty()
     @IsInt()

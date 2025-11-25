@@ -3,9 +3,9 @@ import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Producto } from './entities/producto.entity';
+import { Repository } from 'typeorm';
 import { Categoria } from '../categoria/entities/categoria.entity';
 import { PaginatedProductoResponseDto } from './dto/paginated-producto-response.dto';
-import { Repository } from 'typeorm';
 
 @Injectable()
 export class ProductoService {
@@ -15,15 +15,17 @@ export class ProductoService {
     private readonly productoRepository: Repository<Producto>,
     @InjectRepository(Categoria)
     private readonly categoriaRepository: Repository<Categoria>,
-  ) {}
+  ){
+
+  }
 
   async create(createProductoDto: CreateProductoDto) {
-    //verificar si la categoria existe
+    // verificar si la categoria existe 
     const categoria = await this.categoriaRepository.findOne({where: {id: createProductoDto.categoria}})
-    if (!categoria) throw new NotFoundException('Categoria no encontrada');
+    if(!categoria) throw new NotFoundException('Categoria no encontrada');
 
     const producto = this.productoRepository.create({...createProductoDto, categoria});
-  
+
     return this.productoRepository.save(producto);
   }
 
@@ -51,21 +53,24 @@ export class ProductoService {
   }
 
   async findAll(page: number = 1, limit: number = 10, search: string = '', sortBy: string = 'id', order: 'ASC' | 'DESC' = 'ASC', almacen: number = 0, activo: boolean = true): Promise<PaginatedProductoResponseDto> {
+    
     const queryBuilder = this.productoRepository.createQueryBuilder('producto')
-          .leftJoinAndSelect('producto.almacenes', 'almacen')
-          .where('producto.nombre iLIKE :search OR producto.marca LIKE :search',{
-            search: `%${search}%`
-          })
-          .andWhere('producto.estado = :estado', {estado:activo});
-          
-    //ordenamiento
+            .leftJoinAndSelect('producto.almacenes', 'almacen')
+            .where('producto.nombre iLIKE :search OR producto.marca LIKE :search', {
+              search: `%${search}%`
+            })
+            .andWhere('producto.estado = :estado', {estado:activo});
+    
+  
+
+    // ordenación
     queryBuilder.orderBy(`producto.${sortBy}`, order);
 
-    //paginacion
+    // paginación
     queryBuilder.skip((page - 1)*limit).take(limit);
 
     const [productos, total] = await queryBuilder.getManyAndCount();
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total/limit)
     return {
       data: productos,
       total,
@@ -82,15 +87,15 @@ export class ProductoService {
 
   async findOne(id: number) {
     const producto = await this.productoRepository.findOne({where: {id}});
-    if (!producto) throw new NotFoundException('Producto no encontrado')
+    if(!producto) throw new NotFoundException('Producto no encontrado');
     return producto;
   }
 
   async update(id: number, updateProductoDto: UpdateProductoDto) {
     const producto = await this.findOne(id);
-    if (updateProductoDto.categoria) {
+    if(updateProductoDto.categoria){
       const categoria = await this.categoriaRepository.findOne({where: {id: updateProductoDto.categoria}});
-      if (!categoria) throw new NotFoundException('Categoria no encontrada');
+      if(!categoria) throw new NotFoundException('Categoria no encontrada');
       producto.categoria = categoria;
     }
     Object.assign(producto, updateProductoDto);
@@ -103,4 +108,3 @@ export class ProductoService {
     await this.productoRepository.save(producto);
   }
 }
-

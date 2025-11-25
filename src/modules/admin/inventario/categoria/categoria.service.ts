@@ -10,23 +10,21 @@ export class CategoriaService {
 
   constructor(
     @InjectRepository(Categoria)
-    private categoriaRepository: Repository<Categoria>,
+    private categoriaRepository: Repository<Categoria>
   ){}
 
   create(createCategoriaDto: CreateCategoriaDto) {
-    const categoria = this.categoriaRepository.create(createCategoriaDto)
+    const categoria = this.categoriaRepository.create(createCategoriaDto);
     return this.categoriaRepository.save(categoria);
   }
 
-  findAll(): Promise<Categoria[]> {
+  findAll():Promise<Categoria[]> {
     return this.categoriaRepository.find();
   }
 
   async findOne(id: number) {
     const categoria = await this.categoriaRepository.findOneBy({id});
-    if(!categoria){
-      throw new NotFoundException('La categoria no existe');
-    }
+    if(!categoria) throw new NotFoundException('La categoria no existe');
     return categoria;
   }
 
@@ -37,9 +35,7 @@ export class CategoriaService {
   }
 
   async remove(id: number) {
-    const result = await this.categoriaRepository.delete(id);
-    if(result.affected === 0){
-      throw new NotFoundException('La categoria no existe');
-    }
+    const result = await this.categoriaRepository.delete(id); 
+    if(result.affected === 0) throw new NotFoundException('La categoria no fue encontrada');
   }
 }

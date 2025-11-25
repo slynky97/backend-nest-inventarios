@@ -12,5 +12,5 @@ export class CreateCategoriaDto {
     @ApiProperty({nullable: true, required: false})
     @IsOptional()
     @IsString()
-    descripcion?: string;
+    descripcion: string;
 }
